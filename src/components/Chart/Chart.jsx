@@ -3,20 +3,19 @@ import { fetchDailyData } from '../../api';
 import {Line,Bar} from 'react-chartjs-2';
 import styles from './Chart.module.css';
 const Chart = ({data:{confirmed,recovered,deaths},country}) => {
-    const [dailyData,setDailyData] = useState([]);
+    const [dailyData,setDailyData] = useState({});
 
     useEffect(()=>{
         const fetchAPI = async () =>{
             setDailyData(await fetchDailyData());
         };
         fetchAPI();
-        //console.log(dailyData);
     },[]);
 
     const lineChart = (
-        dailyData.length ?(<Line
+        dailyData[0] ?(<Line
           data={{
-              labels: dailyData.map(({date}) => date),
+              labels: dailyData.map(({date}) => new Date(date).toLocaleDateString()),
               datasets: [{
                   data: dailyData.map(({confirmed}) => confirmed),
                   label: 'Infected',
@@ -37,20 +36,21 @@ const Chart = ({data:{confirmed,recovered,deaths},country}) => {
     const barChart = (
         confirmed?(
             <Bar
+              options={{
+                  plugins:{
+                    legend: {display: false},
+                    title: {display: true, text: `Current state in ${country}`},
+                  }
+              }}
               data={{
                 labels: ['Infected','Recovered','Deaths'],
                 datasets: [{
                     label: 'People',
                     backgroundColor: ['rgba(0,0,255,0.5)','rgba(0,255,0,0.5)','rgba(255,0,0,0.5)'],
-                    data: [confirmed.value,recovered.value,deaths.value]
+                    data: [confirmed.value,recovered.value,deaths.value],
                 }]
               }}
-              options={{
-                  legend: {display: false},
-                  title: {display: true, text: `Current state in ${country}`}
-              }}
-            />
-        ):null
+            />):null
     );
 
     return (  
